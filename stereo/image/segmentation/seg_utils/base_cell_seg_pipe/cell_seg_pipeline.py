@@ -30,8 +30,6 @@ class CellSegPipe(object):
             tissue_seg_method=DEEP,
             post_processing_workers=10,
             model_path=None,
-            *args,
-            **kwargs
     ):
         self.deep_crop_size = DEEP_CROP_SIZE
         self.overlap = OVERLAP
@@ -49,7 +47,7 @@ class CellSegPipe(object):
         self.convert_gray()
         self.out_path = out_path
         if not exists(out_path):
-            os.makedirs(out_path)
+            os.mkdir(out_path)
             logger.info('Create new dir : %s' % out_path)
         self.is_water = is_water
         t0 = time.time()
@@ -68,8 +66,6 @@ class CellSegPipe(object):
         self.score_mask_list = []
         self.post_processing_workers = post_processing_workers
         self.tissue_cell_label = None
-        self.args = args
-        self.kwargs = kwargs
 
     def __imload_list(self, img_path):
         if self.is_list:
@@ -96,12 +92,15 @@ class CellSegPipe(object):
                 logger.info('Image %s convert to gray!' % self.file[idx])
                 self.img_list[idx] = img[:, :, 0]
 
+    @abstractmethod
     def trans16to8(self):
         pass
 
+    @abstractmethod
     def save_each_file_result(self, file_name, idx):
         pass
 
+    @abstractmethod
     def get_tissue_mask(self, tissue_seg_model_path, tissue_seg_method):
         pass
 
@@ -117,12 +116,15 @@ class CellSegPipe(object):
                 filtered_props.append(p)
         return filtered_props
 
+    @abstractmethod
     def get_roi(self):
         pass
 
+    @abstractmethod
     def tissue_cell_infer(self):
         pass
 
+    @abstractmethod
     def tissue_label_filter(self, tissue_cell_label):
         pass
 
@@ -138,6 +140,7 @@ class CellSegPipe(object):
             self.cell_mask.append(cell_mask)
         return self.cell_mask
 
+    @abstractmethod
     def watershed_score(self, cell_mask):
         pass
 
