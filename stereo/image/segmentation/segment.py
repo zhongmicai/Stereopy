@@ -3,6 +3,8 @@
 
 import os
 
+from stereo.image.segmentation.seg_utils.v1_pro import CellSegPipeV1Pro
+
 from stereo.constant import VersionType
 from stereo.image.segmentation.seg_utils.v1 import CellSegPipeV1
 from stereo.image.segmentation.seg_utils.v3 import CellSegPipeV3
@@ -90,6 +92,19 @@ def cell_seg(
             is_water,
             gpu=gpu,
             num_threads=num_threads,
+            model_path=model_path
+        )
+        cell_seg_pipeline.run()
+    elif method == VersionType.v1_pro.value:
+        cell_seg_pipeline = CellSegPipeV1Pro(
+            img_path,
+            out_path,
+            is_water,
+            deep_crop_size,
+            overlap,
+            tissue_seg_model_path=tissue_seg_model_path,
+            tissue_seg_method=tissue_seg_method,
+            post_processing_workers=post_processing_workers,
             model_path=model_path
         )
         cell_seg_pipeline.run()

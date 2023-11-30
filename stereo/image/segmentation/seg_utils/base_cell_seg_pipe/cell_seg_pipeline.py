@@ -13,7 +13,7 @@ import cv2
 import numpy as np
 import tifffile
 
-from stereo.image.tissue_cut import DEEP
+from stereo.image.tissue_cut import DEEP, INTENSITY, SingleStrandDNATissueCut
 from stereo.log_manager import logger
 
 
@@ -24,8 +24,8 @@ class CellSegPipe(object):
             img_path,
             out_path,
             is_water,
-            DEEP_CROP_SIZE=20000,
-            OVERLAP=100,
+            deep_crop_size=20000,
+            overlap=100,
             tissue_seg_model_path='',
             tissue_seg_method=DEEP,
             post_processing_workers=10,
@@ -33,8 +33,8 @@ class CellSegPipe(object):
             *args,
             **kwargs
     ):
-        self.deep_crop_size = DEEP_CROP_SIZE
-        self.overlap = OVERLAP
+        self.deep_crop_size = deep_crop_size
+        self.overlap = overlap
         self.model_path = model_path
         self.img_path = img_path
         if os.path.isdir(img_path):
@@ -71,6 +71,13 @@ class CellSegPipe(object):
         self.args = args
         self.kwargs = kwargs
 
+    def get_img_filter(self):
+        """get tissue image by tissue mask"""
+        # for idx, img in enumerate(self.img_list):
+        for img, tissue_mask in zip(self.img_list, self.tissue_mask):
+            img_filter = np.multiply(img, tissue_mask).astype(np.uint8)
+            self.img_filter.append(img_filter)
+
     def __imload_list(self, img_path):
         if self.is_list:
             img_list = []
@@ -103,8 +110,19 @@ class CellSegPipe(object):
         pass
 
     def get_tissue_mask(self, tissue_seg_model_path, tissue_seg_method):
-        pass
-
+        # if tissue_seg_method is None:
+        #     tissue_seg_method = DEEP
+        # if not tissue_seg_model_path or len(tissue_seg_model_path) == 0:
+        #     tissue_seg_method = INTENSITY
+        # ssDNA_tissue_cut = SingleStrandDNATissueCut(
+        #     src_img_path=self.img_path,
+        #     model_path=tissue_seg_model_path,
+        #     dst_img_path=self.out_path,
+        #     seg_method=tissue_seg_method
+        # )
+        # ssDNA_tissue_cut.tissue_seg()
+        # self.tissue_mask = ssDNA_tissue_cut.mask
+        self.tissue_mask = [tifffile.imread('/data/users/wenzhenbin/script/ssDNA_SS200000135TL_D1_tissue_cut.tif')]
     @staticmethod
     def filter_roi(props):
         filtered_props = []

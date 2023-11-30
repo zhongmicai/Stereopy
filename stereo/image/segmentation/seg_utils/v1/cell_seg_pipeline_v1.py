@@ -12,11 +12,6 @@ from stereo.image.segmentation.seg_utils.v1 import (
     utils,
     cell_infer
 )
-from stereo.image.tissue_cut import (
-    SingleStrandDNATissueCut,
-    DEEP,
-    INTENSITY
-)
 
 
 class CellSegPipeV1(CellSegPipe):
@@ -80,20 +75,6 @@ class CellSegPipeV1(CellSegPipe):
             self.tissue_num.append(len(filtered_props))
             self.tissue_bbox.append([p['bbox'] for p in filtered_props])
 
-    def get_tissue_mask(self, tissue_seg_model_path, tissue_seg_method):
-        if tissue_seg_method is None:
-            tissue_seg_method = DEEP
-        if not tissue_seg_model_path or len(tissue_seg_model_path) == 0:
-            tissue_seg_method = INTENSITY
-        ssDNA_tissue_cut = SingleStrandDNATissueCut(
-            src_img_path=self.img_path,
-            model_path=tissue_seg_model_path,
-            dst_img_path=self.out_path,
-            seg_method=tissue_seg_method
-        )
-        ssDNA_tissue_cut.tissue_seg()
-        self.tissue_mask = ssDNA_tissue_cut.mask
-
     def tissue_label_filter(self, tissue_cell_label):
         """filter cell mask in tissue area"""
         tissue_cell_label_filter = []
@@ -144,16 +125,10 @@ class CellSegPipeV1(CellSegPipe):
             self.post_mask_list.append(post_mask)
             self.score_mask_list.append(score_mask)
 
-    def __get_img_filter(self):
-        """get tissue image by tissue mask"""
-        # for idx, img in enumerate(self.img_list):
-        for img, tissue_mask in zip(self.img_list, self.tissue_mask):
-            img_filter = np.multiply(img, tissue_mask).astype(np.uint8)
-            self.img_filter.append(img_filter)
-
     def run(self):
         from stereo.log_manager import logger
-        self.__get_img_filter()
+        logger.info('Start do cell mask, the method is v1, this will take some minutes.')
+        self.get_img_filter()
 
         t0 = time.time()
         # cell segmentation in roi
