@@ -20,7 +20,7 @@ class CellSegPipeV1Pro(CellSegPipe):
 
         """cell segmentation in tissue area by neural network"""
         self.tissue_cell_label = []
-        for idx, img in enumerate(self.img_list):
+        for idx, img in enumerate(self.img_filter):
             tissue_bbox = self.tissue_bbox[idx]
             tissue_img = [img[p[0]: p[2], p[1]: p[3]] for p in tissue_bbox]
 
